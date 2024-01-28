@@ -1,24 +1,23 @@
-name: Code check
+name: Deploy to GH pages
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
 
 jobs:
-  linter:
-    name: Linter
-    runs-on: ubuntu-22.04
+  build-deploy:
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
         node-version: [20]
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - uses: pnpm/action-setup@v2
         with:
           version: 8
@@ -29,6 +28,12 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
-
-      - name: Linter
-        run: pnpm lint-staged --diff=origin/main
+      - name: Build
+        run: pnpm run build
+      #- name: Test
+      #  run: npm test
+      - name: Deploy🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: build
